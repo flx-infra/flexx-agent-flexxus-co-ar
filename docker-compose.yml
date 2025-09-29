@@ -12,7 +12,6 @@ services:
       # Environment settings
       ENVIRONMENT: ${SERVER_ENVIRONMENT:-production}
       DEBUG: ${SERVER_DEBUG:-false}
-      TESTING: false
 
       # Feature flags
       ENABLE_CACHING: ${SERVER_ENABLE_CACHING:-true}
