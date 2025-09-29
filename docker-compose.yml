@@ -94,7 +94,7 @@ services:
       NEXT_PUBLIC_LOCAL_PREFIX: ${CLIENT_LOCAL_PREFIX:-pfa_config_}
       NODE_ENV: production
     ports:
-      - "${CLIENT_PORT:-3000}:3000"
+      - "${CLIENT_PORT:-4375}:4375"
     networks:
       - traefik
     depends_on:
