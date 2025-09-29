@@ -63,7 +63,7 @@ services:
 
       # Security settings
       SECURITY_ENABLE_CORS: ${SECURITY_ENABLE_CORS:-true}
-      SECURITY_ALLOWED_ORIGINS: ${SECURITY_ALLOWED_ORIGINS:-http://10.250.0.68:3000,http://127.0.0.1:3000}
+      SECURITY_ALLOWED_ORIGINS: ${SECURITY_ALLOWED_ORIGINS:-http://10.250.0.68:4375,http://127.0.0.1:4375}
       SECURITY_ENABLE_RATE_LIMITING: ${SECURITY_ENABLE_RATE_LIMITING:-true}
       SECURITY_RATE_LIMIT_REQUESTS: ${SECURITY_RATE_LIMIT_REQUESTS:-100}
     ports:
@@ -100,7 +100,7 @@ services:
     depends_on:
       - server
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:4375/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
