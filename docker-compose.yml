@@ -1,33 +1,30 @@
-version: '3.8'
-
+version: "3.9"
 services:
-  server:
+  pfa-server:
+    build: ./A_PFAServer
     image: fabreguesm/projectflexxagent-server:1.0.0
-    build:
-      context: ./A_PFAServer
-      dockerfile: Dockerfile
-    container_name: pfa-server
-    restart: unless-stopped
+    ports:
+      - "8000:8000"
     environment:
       # Environment settings
       ENVIRONMENT: ${SERVER_ENVIRONMENT:-production}
       DEBUG: ${SERVER_DEBUG:-false}
-
+ 
       # Feature flags
       ENABLE_CACHING: ${SERVER_ENABLE_CACHING:-true}
       ENABLE_METRICS: ${SERVER_ENABLE_METRICS:-true}
       ENABLE_AUDIT_LOGGING: ${SERVER_ENABLE_AUDIT_LOGGING:-true}
-
+ 
       # Database configuration
       DATABASE_HOST: ${DATABASE_HOST:-10.250.0.68}
       DATABASE_PORT: ${DATABASE_PORT:-5003}
       DATABASE_NAME: ${DATABASE_NAME:-pfaserver}
       DATABASE_USER: ${DATABASE_USER:-flexxus}
-      DATABASE_PASSWORD: Flexxus2023**
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-Flexxus2023**}
       DATABASE_POOL_SIZE: ${DATABASE_POOL_SIZE:-10}
       DATABASE_MAX_OVERFLOW: ${DATABASE_MAX_OVERFLOW:-20}
       DATABASE_POOL_TIMEOUT: ${DATABASE_POOL_TIMEOUT:-30}
-
+ 
       # Cache configuration
       CACHE_MODELS_DATA_TTL: ${CACHE_MODELS_DATA_TTL:-600}
       CACHE_MODEL_CONFIG_TTL: ${CACHE_MODEL_CONFIG_TTL:-1800}
@@ -35,7 +32,7 @@ services:
       CACHE_DEFAULT_TTL: ${CACHE_DEFAULT_TTL:-300}
       CACHE_MAX_SIZE: ${CACHE_MAX_SIZE:-500}
       CACHE_CLEANUP_INTERVAL: ${CACHE_CLEANUP_INTERVAL:-60}
-
+ 
       # Logging configuration
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_FORMAT: ${LOG_FORMAT:-json}
@@ -44,76 +41,71 @@ services:
       LOG_FILE_PATH: ${LOG_FILE_PATH:-logs/pfaserver.log}
       LOG_MAX_FILE_SIZE: ${LOG_MAX_FILE_SIZE:-10485760}
       LOG_BACKUP_COUNT: ${LOG_BACKUP_COUNT:-5}
-
+ 
       # Server configuration
       SERVER_API_VERSION: ${SERVER_API_VERSION:-2.1.0}
       SERVER_INSTANCE_NAME: ${SERVER_INSTANCE_NAME:-pfa-server-docker}
       SERVER_DATABASE_VERSION: ${SERVER_DATABASE_VERSION:-PostgreSQL 15.3}
       SERVER_SUPPORT_CONTACT: ${SERVER_SUPPORT_CONTACT:-support@pfaserver.com}
-
+ 
       # API Provider configuration
       API_OPENAI_ENDPOINT: ${API_OPENAI_ENDPOINT:-https://api.openai.com/v1}
       API_ANTHROPIC_ENDPOINT: ${API_ANTHROPIC_ENDPOINT:-https://api.anthropic.com}
       API_MOONSHOT_ENDPOINT: ${API_MOONSHOT_ENDPOINT:-https://api.moonshot.cn}
-
+ 
       # Security configuration - API Keys
       SECURITY_OPENAI_API_KEY: ${OPENAI_API_KEY}
       SECURITY_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       SECURITY_MOONSHOT_API_KEY: ${MOONSHOT_API_KEY}
-
+ 
       # Security settings
       SECURITY_ENABLE_CORS: ${SECURITY_ENABLE_CORS:-true}
       SECURITY_ALLOWED_ORIGINS: ${SECURITY_ALLOWED_ORIGINS:-http://10.250.0.68:4375,http://127.0.0.1:4375}
       SECURITY_ENABLE_RATE_LIMITING: ${SECURITY_ENABLE_RATE_LIMITING:-true}
       SECURITY_RATE_LIMIT_REQUESTS: ${SECURITY_RATE_LIMIT_REQUESTS:-100}
-    ports:
-      - "${SERVER_PORT:-8000}:8000"
     volumes:
-      - server_logs:/app/logs
+      - server-logs:/app/logs
     networks:
       - traefik
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-
-  client:
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+ 
+  pfa-client:
+    build: ./D_PFAShadCNClient
     image: fabreguesm/projectflexxagent-cliente:1.0.0
-    build:
-      context: ./D_PFAShadCNClient
-      dockerfile: Dockerfile
-    container_name: pfa-client
-    restart: unless-stopped
+    ports:
+      - "4375:4375"
     environment:
-      # Next.js runtime environment variables
-      NEXT_PUBLIC_API_BASE_URL: ${CLIENT_API_URL:-http://server:8000}
+      NEXT_PUBLIC_API_BASE_URL: http://10.250.0.68:8000
       NEXT_PUBLIC_FRONTEND_URL: ${CLIENT_FRONTEND_URL:-http://10.250.0.68:4375}
       NEXT_PUBLIC_SESSION_PREFIX: ${CLIENT_SESSION_PREFIX:-pfa_}
       NEXT_PUBLIC_LOCAL_PREFIX: ${CLIENT_LOCAL_PREFIX:-pfa_config_}
       NODE_ENV: production
-    ports:
-      - "${CLIENT_PORT:-4375}:4375"
     networks:
       - traefik
-    depends_on:
-      - server
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4375/api/health"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-
+      start_period: 60s
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+ 
 networks:
   traefik:
-    external: true
-
+    external:
+      name: traefik
+ 
 volumes:
-  postgres_data:
-    driver: local
-    name: pfa-postgres-data
-  server_logs:
-    driver: local
-    name: pfa-server-logs
+  server-logs:
