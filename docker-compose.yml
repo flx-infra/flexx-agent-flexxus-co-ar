@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   server:
+    image: fabreguesm/projectflexxagent-server:1.0.0
     build:
-      image: fabreguesm/projectflexxagent-server:1.0.0
       context: ./A_PFAServer
       dockerfile: Dockerfile
     container_name: pfa-server
@@ -23,7 +23,7 @@ services:
       DATABASE_PORT: ${DATABASE_PORT:-5003}
       DATABASE_NAME: ${DATABASE_NAME:-pfaserver}
       DATABASE_USER: ${DATABASE_USER:-flexxus}
-      DATABASE_PASSWORD: Flexxus2023** #{DATABASE_PASSWORD}
+      DATABASE_PASSWORD: Flexxus2023**
       DATABASE_POOL_SIZE: ${DATABASE_POOL_SIZE:-10}
       DATABASE_MAX_OVERFLOW: ${DATABASE_MAX_OVERFLOW:-20}
       DATABASE_POOL_TIMEOUT: ${DATABASE_POOL_TIMEOUT:-30}
@@ -71,19 +71,18 @@ services:
     volumes:
       - server_logs:/app/logs
     networks:
+      - traefik
       - pfa-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://10.250.0.68:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-    depends_on:
-      - db
 
   client:
+    image: fabreguesm/projectflexxagent-cliente:1.0.0
     build:
-      image: fabreguesm/projectflexxagent-cliente:1.0.0
       context: ./D_PFAShadCNClient
       dockerfile: Dockerfile
     container_name: pfa-client
@@ -98,6 +97,7 @@ services:
     ports:
       - "${CLIENT_PORT:-3000}:3000"
     networks:
+      - traefik
       - pfa-network
     depends_on:
       server:
@@ -109,17 +109,11 @@ services:
       retries: 3
       start_period: 40s
 
-   # healthcheck:
-   #   test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-postgres} -d ${DATABASE_NAME:-pfaserver}"]
-   #   interval: 10s
-   #   timeout: 5s
-   #   retries: 5
-   #   start_period: 30s
-
 networks:
   traefik:
-    external:
-      name: traefik
+    external: true
+  pfa-network:
+    driver: bridge
 
 volumes:
   postgres_data:
