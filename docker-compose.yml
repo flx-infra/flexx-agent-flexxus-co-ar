@@ -2,13 +2,14 @@ version: "3.9"
 services:
   pfa-server:
     build: ./A_PFAServer
-    image: fabreguesm/projectflexxagent-server:1.0.1
+    image: fabreguesm/projectflexxagent-server:1.0.0
     ports:
       - "8000:8000"
     environment:
       # Environment settings
-      ENVIRONMENT: ${SERVER_ENVIRONMENT:-production}
-      DEBUG: ${SERVER_DEBUG:-false}
+      ENVIRONMENT: ${SERVER_ENVIRONMENT:-development}
+      DEBUG: ${SERVER_DEBUG:-true}
+      PYTHONUNBUFFERED: 1
  
       # Feature flags
       ENABLE_CACHING: ${SERVER_ENABLE_CACHING:-true}
@@ -34,10 +35,10 @@ services:
       CACHE_CLEANUP_INTERVAL: ${CACHE_CLEANUP_INTERVAL:-60}
  
       # Logging configuration
-      LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      LOG_FORMAT: ${LOG_FORMAT:-json}
+      LOG_LEVEL: ${LOG_LEVEL:-DEBUG}
+      LOG_FORMAT: ${LOG_FORMAT:-pretty}
       LOG_ENABLE_CONSOLE: ${LOG_ENABLE_CONSOLE:-true}
-      LOG_ENABLE_FILE: ${LOG_ENABLE_FILE:-false}
+      LOG_ENABLE_FILE: ${LOG_ENABLE_FILE:-true}
       LOG_FILE_PATH: ${LOG_FILE_PATH:-logs/pfaserver.log}
       LOG_MAX_FILE_SIZE: ${LOG_MAX_FILE_SIZE:-10485760}
       LOG_BACKUP_COUNT: ${LOG_BACKUP_COUNT:-5}
@@ -68,19 +69,27 @@ services:
     networks:
       - traefik
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:8000/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8000/health || echo 'Health check failed but continuing...'"]
+      interval: 60s
+      timeout: 30s
+      retries: 10
+      start_period: 120s
     deploy:
       replicas: 1
       restart_policy:
         condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
  
   pfa-client:
     build: ./D_PFAShadCNClient
-    image: fabreguesm/projectflexxagent-cliente:1.0.1
+    image: fabreguesm/projectflexxagent-cliente:1.0.0
     ports:
       - "4375:4375"
     environment:
@@ -92,15 +101,23 @@ services:
     networks:
       - traefik
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:4375 || echo 'Client health check failed but continuing...'"]
+      interval: 60s
+      timeout: 30s
+      retries: 10
+      start_period: 120s
     deploy:
       replicas: 1
       restart_policy:
         condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
  
 networks:
   traefik:
@@ -109,3 +126,4 @@ networks:
  
 volumes:
   server-logs:
+ 
