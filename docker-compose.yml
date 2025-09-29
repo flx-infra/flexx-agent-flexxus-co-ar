@@ -3,7 +3,6 @@ services:
   pfa-server:
     build: ./A_PFAServer
     image: fabreguesm/projectflexxagent-server:1.0.0
-    platform: linux/amd64
     ports:
       - "8000:8000"
     environment:
@@ -91,7 +90,6 @@ services:
   pfa-client:
     build: ./D_PFAShadCNClient
     image: fabreguesm/projectflexxagent-cliente:1.0.0
-    platform: linux/amd64
     ports:
       - "4375:4375"
     environment:
