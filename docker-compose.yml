@@ -6,8 +6,6 @@ services:
     build:
       context: ./A_PFAServer
       dockerfile: Dockerfile
-    container_name: pfa-server
-    restart: unless-stopped
     environment:
       # Environment settings
       ENVIRONMENT: ${SERVER_ENVIRONMENT:-production}
@@ -72,7 +70,6 @@ services:
       - server_logs:/app/logs
     networks:
       - traefik
-      - pfa-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -98,7 +95,6 @@ services:
       - "${CLIENT_PORT:-3000}:3000"
     networks:
       - traefik
-      - pfa-network
     depends_on:
       server:
         condition: service_healthy
@@ -112,8 +108,7 @@ services:
 networks:
   traefik:
     external: true
-  pfa-network:
-    driver: bridge
+ 
 
 volumes:
   postgres_data:
