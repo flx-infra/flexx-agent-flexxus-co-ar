@@ -68,6 +68,9 @@ services:
       - server-logs:/app/logs
     networks:
       - traefik
+    deploy:
+      placement:
+        constraints: ["${NODE}"]      
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:8000/health || echo 'Health check failed but continuing...'"]
       interval: 60s
@@ -82,10 +85,9 @@ services:
         max_attempts: 3
         window: 120s
     logging:
-      driver: "json-file"
+      driver: loki
       options:
-        max-size: "10m"
-        max-file: "3"
+        loki-url: ${LOKI_URL}
  
   pfa-client:
     build: ./D_PFAShadCNClient
@@ -100,6 +102,9 @@ services:
       NODE_ENV: production
     networks:
       - traefik
+    deploy:
+      placement:
+        constraints: ["${NODE}"]
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:4375 || echo 'Client health check failed but continuing...'"]
       interval: 60s
@@ -114,10 +119,9 @@ services:
         max_attempts: 3
         window: 120s
     logging:
-      driver: "json-file"
+      driver: loki
       options:
-        max-size: "10m"
-        max-file: "3"
+        loki-url: ${LOKI_URL}
  
 networks:
   traefik:
@@ -126,4 +130,7 @@ networks:
  
 volumes:
   server-logs:
+  volumes:  
+  flexx-agent-com-ar:
+    name: "${SERVICE_NAME}_flexx-agent-com-ar"
  
