@@ -77,13 +77,6 @@ services:
       timeout: 30s
       retries: 10
       start_period: 120s
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
-        delay: 5s
-        max_attempts: 3
-        window: 120s
     logging:
       driver: loki
       options:
