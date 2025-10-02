@@ -41,7 +41,7 @@ services:
 
   pfa-client:
     build: ./D_PFAShadCNClient
-    image: fabreguesm/projectflexxagent-cliente:1.0.4
+    image: fabreguesm/projectflexxagent-cliente:1.0.5
     ports:
       - "${PORT:-4375}:4375"
 
