@@ -38,10 +38,7 @@ services:
       timeout: 30s
       retries: 10
       start_period: 120s
-  logging:
-      driver: loki
-      options:
-        loki-url: ${LOKI_URL}
+
   pfa-client:
     build: ./D_PFAShadCNClient
     image: fabreguesm/projectflexxagent-cliente:1.0.4
