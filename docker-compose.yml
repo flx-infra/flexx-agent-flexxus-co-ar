@@ -47,7 +47,7 @@ services:
 
     environment:
       PORT: "${PORT:-3755}"
-      SERVER_URL: "${SERVER_URL:-http://10.250.0.68:8000}"
+      SERVER_URL: "${SERVER_URL:-http://10.250.0.68}"
       SERVER_PORT: "${SERVER_PORT:-8000}"
     networks:
       - traefik
