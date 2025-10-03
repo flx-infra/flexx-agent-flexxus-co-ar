@@ -32,12 +32,7 @@ services:
     deploy:
       placement:
         constraints: ["${NODE}"]  
-    healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://10.250.0.68:8000/health || echo 'Health check failed but continuing...'"]
-      interval: 60s
-      timeout: 30s
-      retries: 10
-      start_period: 120s
+   
 
   pfa-client:
     build: ./D_PFAShadCNClient
