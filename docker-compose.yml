@@ -42,8 +42,8 @@ services:
 
     environment:
       PORT: "${PORT:-3755}"
-      SERVER_URL: "${SERVER_URL:-http://10.250.0.68:8000}"
-      SERVER_PORT: "${SERVER_PORT:-8000}"
+      SERVER_BASE_URL: "${SERVER_BASE_URL:-http://10.250.0.68:8000}"
+      FRONTEND_BASE_URL: "${FRONTEND_BASE_URL:-http://10.250.0.68:3755}"
     networks:
       - traefik
     healthcheck:
