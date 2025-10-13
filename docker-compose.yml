@@ -2,7 +2,7 @@ version: "3.9"
 services:
   pfa-server:
     build: ./A_PFAServer
-    image: fabreguesm/projectflexxagent-server:1.1.0
+    image: fabreguesm/projectflexxagent-server:1.1.1
     ports:
       - "${SERVER_PORT:-8000}:8000"
     
@@ -26,6 +26,7 @@ services:
       EMAIL_FROM_ADDRESS: "${EMAIL_FROM_ADDRESS:-info@cognitivaai.com}"
       EMAIL_FROM_NAME: "${EMAIL_FROM_NAME:-Cognitiva AI}"
       SERVER_VERSION: "${SERVER_VERSION:-1.0.0.0}"
+      BUILD_NUMBER: "${BUILD_NUMBER:-0}"
     volumes:
       - server-logs:/app/logs
     networks:
@@ -37,7 +38,7 @@ services:
 
   pfa-client:
     build: ./D_PFAShadCNClient
-    image: fabreguesm/projectflexxagent-cliente:1.1.0
+    image: fabreguesm/projectflexxagent-cliente:1.1.1
     ports:
       - "${PORT:-3755}:3755"
 
