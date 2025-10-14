@@ -5,20 +5,19 @@ services:
     image: fabreguesm/projectflexxagent-server:1.2.0
     ports:
       - "${SERVER_PORT:-8000}:8000"
-    env_file:
-      - ./A_PFAServer/config/.env
+    
     environment:
       DB_ENGINE: "${DB_ENGINE:-postgresql}"
-      DB_HOST: "${DB_HOST:-localhost}"
-      DB_PORT: "${DB_PORT:-5432}"
+      DB_HOST: "${DB_HOST:-10.250.0.68}"
+      DB_PORT: "${DB_PORT:-5003}"
       DB_NAME: "${DB_NAME:-ferrocons_db}"
-      DB_USER: "${DB_USER:-eriodanieldiaz}"
-      DB_PASSWORD: "${DB_PASSWORD:-changeme}"
-      ADMIN_DB_USER: "${ADMIN_DB_USER:-eriodanieldiaz}"
-      ADMIN_DB_HOST: "${ADMIN_DB_HOST:-localhost}"
-      ADMIN_DB_PORT: "${ADMIN_DB_PORT:-5432}"
+      DB_USER: "${DB_USER:-flexxus}"
+      DB_PASSWORD: "${DB_PASSWORD:-Flexxus2023**}"
+      ADMIN_DB_USER: "${ADMIN_DB_USER:-flexxus}"
+      ADMIN_DB_HOST: "${ADMIN_DB_HOST:-10.250.0.68}"
+      ADMIN_DB_PORT: "${ADMIN_DB_PORT:-5002}"
       ADMIN_DB_NAME: "${ADMIN_DB_NAME:-CognitivaAI}"
-      ADMIN_DB_PASSWORD: "${ADMIN_DB_PASSWORD:-changeme}"
+      ADMIN_DB_PASSWORD: "${ADMIN_DB_PASSWORD:-Flexxus2023**}"
       MCP_DISCOVERY_ENABLED: "${MCP_DISCOVERY_ENABLED:-true}"
       MCP_SERVERS: "${MCP_SERVERS:-aulas_demo,ferrocons_data}"
       MCP_LAUNCH_FILE: "${MCP_LAUNCH_FILE:-/Users/eriodanieldiaz/Desktop/FlexxAgent/Server/mcp_config.json}"
@@ -32,34 +31,37 @@ services:
       - server-logs:/app/logs
     networks:
       - traefik
-    healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q ${SERVER_HEALTHCHECK_URL:-http://localhost:8000/health} || echo 'Health check failed but continuing...'"]
-      interval: 60s
-      timeout: 30s
-      retries: 10
-      start_period: 120s
+    deploy:
+      placement:
+        constraints: ["${NODE}"]
+   
+
   pfa-client:
-    build:
-      context: ./D_PFAShadCNClient
-      args:
-        SERVER_BASE_URL: "${SERVER_BASE_URL:-http://10.250.0.68:8000}"
-        FRONTEND_BASE_URL: "${FRONTEND_BASE_URL:-}"
-        PORT: "${PORT:-3755}"
+    build: ./D_PFAShadCNClient
     image: fabreguesm/projectflexxagent-cliente:1.2.0
     ports:
       - "${PORT:-3755}:3755"
+
     environment:
       PORT: "${PORT:-3755}"
       SERVER_BASE_URL: "${SERVER_BASE_URL:-http://10.250.0.68:8000}"
-      FRONTEND_BASE_URL: "${FRONTEND_BASE_URL:-}"
+      FRONTEND_BASE_URL: "${FRONTEND_BASE_URL:-http://10.250.0.68:3755}"
     networks:
       - traefik
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider ${CLIENT_HEALTHCHECK_URL:-http://localhost:4375} || echo 'Client health check failed but continuing...'"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3755 || echo 'Client health check failed but continuing...'"]
       interval: 60s
       timeout: 30s
       retries: 10
       start_period: 120s
+    deploy:
+      placement:
+        constraints: ["${NODE}"]
+    logging:
+      driver: loki
+      options:
+        loki-url: ${LOKI_URL}
+  
 networks:
   traefik:
     external:
